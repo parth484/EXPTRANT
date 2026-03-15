@@ -13,19 +13,33 @@ st.markdown(
 """,
 unsafe_allow_html=True
 )
-menu = st.sidebar.selectbox(
-    "Navigation",
-    [
-        "Add Expense",
-        "View Expense",
-        "Total Expense",
-        "Edit Expense",
-        "Delete Expense",
-        "Expense Chart",
-        "Monthly Analytics"
-        
-    ]
-)
+#----------------Buttons on sidebar------------------------
+st.sidebar.title("Navigation")
+
+if st.sidebar.button("➕ Add Expense"):
+    st.session_state.page = "Add Expense"
+
+if st.sidebar.button("📋 View Expense"):
+    st.session_state.page = "View Expense"
+
+if st.sidebar.button("💰 Total Expense"):
+    st.session_state.page = "Total Expense"
+
+if st.sidebar.button("✏ Edit Expense"):
+    st.session_state.page = "Edit Expense"
+
+if st.sidebar.button("🗑 Delete Expense"):
+    st.session_state.page = "Delete Expense"
+
+if st.sidebar.button("📊 Expense Chart"):
+    st.session_state.page = "Expense Chart"
+
+if st.sidebar.button("📊 Monthly Analytics"):
+    st.session_state.page = "Monthly Analytics"
+
+if "page" not in st.session_state:
+    st.session_state.page = "Add Expense"    
+
 st.sidebar.markdown("---")
 
 st.sidebar.markdown(
@@ -48,6 +62,7 @@ unsafe_allow_html=True
 )
 
 
+#--------------------------validations------------------
 def exp_validation(payment_id):
      return  payment_id.startswith("EX") and  payment_id[2:].isdigit() and len(payment_id) == 5
 
@@ -80,7 +95,9 @@ def ValidateAmount(amount):
 
 expenses=load_expense()
 
-if menu == "Add Expense":
+
+#-----------------pages logic-----------------------
+if st.session_state.page == "Add Expense":
     st.subheader("➕ Add Expense")
 
     with st.form("add_student", clear_on_submit=True):
@@ -113,7 +130,7 @@ if menu == "Add Expense":
             save_expenses(expenses)
             st.success("saved!!!")      
 
-if menu == "View Expense":
+if st.session_state.page == "View Expense":
     st.subheader("📋 All Expenses")
 
     if len(expenses) == 0:
@@ -121,14 +138,14 @@ if menu == "View Expense":
     else:
          st.dataframe(expenses, use_container_width=True)
 
-if menu == "Total Expense":
+if st.session_state.page == "Total Expense":
     st.subheader("💰 Total Spending")
 
     total = sum(float(i["amount"]) for i in expenses)
 
     st.metric("Total Spent", f"₹ {total}")
 
-if menu == "Edit Expense":
+if st.session_state.page == "Edit Expense":
     st.subheader("✏ Edit Expense")
 
     payment_ids = [i["payment_id"] for i in expenses]
@@ -145,7 +162,7 @@ if menu == "Edit Expense":
                 st.success("Expense updated successfully!")
                 break
 
-if menu == "Delete Expense":
+if st.session_state.page == "Delete Expense":
     st.subheader("🗑 Delete Expense")
 
     payment_ids = [i["payment_id"] for i in expenses]
@@ -160,7 +177,7 @@ if menu == "Delete Expense":
                 st.success("Expense deleted successfully!")
                 break     
 
-if menu == "Expense Chart":
+if st.session_state.page == "Expense Chart":
     st.subheader("📊 Expense Category Chart")
 
     category_data = {}
@@ -177,7 +194,7 @@ if menu == "Expense Chart":
     st.bar_chart(category_data)            
 
 #---------------Monthly spendings__________________
-if menu == "Monthly Analytics":
+if st.session_state.page == "Monthly Analytics":
     st.subheader("📅 Monthly Expense Analytics")
 
     monthly_data = {}
