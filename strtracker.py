@@ -1,29 +1,18 @@
 import streamlit as st
-import sqlite3
+import os
 import datetime
 
-# DATABASE CONNECTION
-conn = sqlite3.connect("expenses.db", check_same_thread=False)
-cursor = conn.cursor()
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS expenses(
-payment_id TEXT PRIMARY KEY,
-date TEXT,
-category TEXT,
-amount REAL,
-description TEXT
-)
-""")
-conn.commit()
+TRACKED="tracked.txt"
 
 st.set_page_config("Expense tracker", layout="wide")
-st.title("💸 Expense Tracker System")
+st.title("💸 Expense Tacker System")
 
-st.markdown("""
+st.markdown(
+"""
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-""", unsafe_allow_html=True)
-
+""",
+unsafe_allow_html=True
+)
 menu = st.sidebar.selectbox(
     "Navigation",
     [
@@ -33,12 +22,13 @@ menu = st.sidebar.selectbox(
         "Edit Expense",
         "Delete Expense",
         "Expense Chart"
+        
     ]
 )
-
 st.sidebar.markdown("---")
 
-st.sidebar.markdown("""
+st.sidebar.markdown(
+"""
 <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
 <a href="https://www.linkedin.com/in/parth-adsul-889106384/" target="_blank">
 <i class="fab fa-linkedin" style="font-size:34px; color:#0A66C2;"></i>
@@ -52,78 +42,84 @@ st.sidebar.markdown("""
 <p style="text-align:center; font-size:12px; margin-top:8px;">
 Made by Parth Adsul
 </p>
-""", unsafe_allow_html=True)
-
+""",
+unsafe_allow_html=True
+)
 print("------------------Khata book app----------------------")
 
-
 def exp_validation(payment_id):
-    return payment_id.startswith("EX") and payment_id[2:].isdigit() and len(payment_id) == 5
-
+     return  payment_id.startswith("EX") and  payment_id[2:].isdigit() and len(payment_id) == 5
 
 def load_expense():
-    cursor.execute("SELECT * FROM expenses")
-    rows = cursor.fetchall()
-
     expenses = []
-    for r in rows:
-        expenses.append({
-            "payment_id": r[0],
-            "date": r[1],
-            "category": r[2],
-            "amount": r[3],
-            "description": r[4],
-        })
+    if not os.path.exists(TRACKED):
+        open(TRACKED, "w").close()
+    with open(TRACKED) as f:
+        for line in f:
+            d = line.strip().split("|")
+            if len(d) == 5:
+                expenses.append({
+                    "payment_id":d[0],
+                    "date": d[1],
+                    "category": d[2],
+                    "amount": d[3],
+                    "description": d[4],
+                     
+                })
     return expenses
 
+def save_expenses(expenses):
+    with open(TRACKED, "w") as f:
+        for s in expenses:
+            line = "|".join(str(value) for value in s.values())
+            f.write(line + "\n")
 
 def ValidateAmount(amount):
-    return amount > 0
+   return amount>0
 
+expenses=load_expense()
 
-expenses = load_expense()
-
-# ADD EXPENSE
 if menu == "Add Expense":
     st.subheader("➕ Add Expense")
 
-    with st.form("add_expense", clear_on_submit=True):
-        payment_id = st.text_input("Expense ID (EX001, EX002...)")
-        date = datetime.date.today().strftime("%d-%m-%Y")
-        category = st.text_input("Enter category (Food, cloth, books...)")
-        amount = st.number_input("Enter amount")
-        description = st.text_input("Additional description")
+    with st.form("add_student", clear_on_submit=True):
+        payment_id = st.text_input("expense ID (EX001,EX002,...)")
+        date = datetime.date.today().strftime("%d-%m-%Y") 
+        category = st.text_input("Enter category(Food,cloth,books,etc..)")
+        amount=st.number_input("enter amount")
+        description = st.text_input("additional description")
         submit = st.form_submit_button("Add Expense")
 
     if submit:
-        if not exp_validation(payment_id):
+         if not exp_validation(payment_id):
             st.error("Invalid payment ID")
+         elif any(s["payment_id"] == payment_id for s in expenses):
+            st.warning("expense id already exists")  
+         elif not ValidateAmount(amount):
+             st.error("amount should be greater than 0.Rs") 
+         else:
 
-        elif any(s["payment_id"] == payment_id for s in expenses):
-            st.warning("Expense ID already exists")
+            expenses.append({
+                    "payment_id":payment_id,
+                    "date": date,
+                    "category": category,
+                    "amount": amount,
+                    "description": description,
+                    
+                
+            })
 
-        elif not ValidateAmount(amount):
-            st.error("Amount should be greater than 0")
+            save_expenses(expenses)
+            st.success("saved!!!")      
 
-        else:
-            cursor.execute(
-                "INSERT INTO expenses VALUES (?,?,?,?,?)",
-                (payment_id, date, category, amount, description)
-            )
-            conn.commit()
-
-            st.success("Expense saved successfully!")
-
-# VIEW EXPENSE
 if menu == "View Expense":
     st.subheader("📋 All Expenses")
 
     if len(expenses) == 0:
         st.info("No expenses found")
     else:
-        st.dataframe(expenses, use_container_width=True)
+         st.dataframe(expenses, use_container_width=True)
 
-# TOTAL EXPENSE
 if menu == "Total Expense":
     st.subheader("💰 Total Spending")
 
@@ -131,7 +127,6 @@ if menu == "Total Expense":
 
     st.metric("Total Spent", f"₹ {total}")
 
-# EDIT EXPENSE
 if menu == "Edit Expense":
     st.subheader("✏ Edit Expense")
 
@@ -142,16 +137,13 @@ if menu == "Edit Expense":
     new_amount = st.number_input("Enter new amount", min_value=1)
 
     if st.button("Update Expense"):
+        for i in expenses:
+            if i["payment_id"] == selected_id:
+                i["amount"] = new_amount
+                save_expenses(expenses)
+                st.success("Expense updated successfully!")
+                break
 
-        cursor.execute(
-            "UPDATE expenses SET amount=? WHERE payment_id=?",
-            (new_amount, selected_id)
-        )
-        conn.commit()
-
-        st.success("Expense updated successfully!")
-
-# DELETE EXPENSE
 if menu == "Delete Expense":
     st.subheader("🗑 Delete Expense")
 
@@ -160,16 +152,13 @@ if menu == "Delete Expense":
     selected_id = st.selectbox("Select Expense ID to delete", payment_ids)
 
     if st.button("Delete Expense"):
+        for i in expenses:
+            if i["payment_id"] == selected_id:
+                expenses.remove(i)
+                save_expenses(expenses)
+                st.success("Expense deleted successfully!")
+                break     
 
-        cursor.execute(
-            "DELETE FROM expenses WHERE payment_id=?",
-            (selected_id,)
-        )
-        conn.commit()
-
-        st.success("Expense deleted successfully!")
-
-# EXPENSE CHART
 if menu == "Expense Chart":
     st.subheader("📊 Expense Category Chart")
 
@@ -184,4 +173,4 @@ if menu == "Expense Chart":
         else:
             category_data[cat] = amt
 
-    st.bar_chart(category_data)
+    st.bar_chart(category_data)                               
