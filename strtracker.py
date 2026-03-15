@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import datetime
 
-TRACKED="tracked.txt"
+TRACKED = os.path.join(os.path.dirname(__file__), "tracked.txt")
 
 st.set_page_config("Expense tracker", layout="wide")
 st.title("💸 Expense Tacker System")
