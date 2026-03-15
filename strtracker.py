@@ -21,7 +21,8 @@ menu = st.sidebar.selectbox(
         "Total Expense",
         "Edit Expense",
         "Delete Expense",
-        "Expense Chart"
+        "Expense Chart",
+        "Monthly Analytics"
         
     ]
 )
@@ -45,7 +46,7 @@ Made by Parth Adsul
 """,
 unsafe_allow_html=True
 )
-print("------------------Khata book app----------------------")
+
 
 def exp_validation(payment_id):
      return  payment_id.startswith("EX") and  payment_id[2:].isdigit() and len(payment_id) == 5
@@ -173,4 +174,35 @@ if menu == "Expense Chart":
         else:
             category_data[cat] = amt
 
-    st.bar_chart(category_data)                               
+    st.bar_chart(category_data)            
+
+#---------------Monthly spendings__________________
+if menu == "Monthly Analytics":
+    st.subheader("📅 Monthly Expense Analytics")
+
+    monthly_data = {}
+
+    for i in expenses:
+        date_str = i["date"]
+        amount = float(i["amount"])
+
+        date_obj = datetime.datetime.strptime(date_str, "%d-%m-%Y")
+        month_key = date_obj.strftime("%B %Y")   # Example: March 2026
+
+        if month_key in monthly_data:
+            monthly_data[month_key] += amount
+        else:
+            monthly_data[month_key] = amount
+
+    if len(monthly_data) == 0:
+        st.info("No expenses available")
+    else:
+        st.bar_chart(monthly_data)
+
+        highest_month = max(monthly_data, key=monthly_data.get)
+
+        st.metric(
+            "Highest Spending Month",
+            highest_month,
+            f"₹ {monthly_data[highest_month]}"
+        )
