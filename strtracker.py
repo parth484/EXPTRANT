@@ -1,19 +1,311 @@
+# import streamlit as st
+# import os
+# import datetime
+
+# TRACKED = os.path.join(os.path.dirname(__file__), "tracked.txt")
+
+# st.set_page_config("Expense tracker", layout="wide")
+# st.title("💸 Expense Tacker System")
+
+# st.markdown(
+# """
+# <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+# """,
+# unsafe_allow_html=True
+# )
+# #----------------Buttons on sidebar------------------------
+# st.sidebar.title("Navigation")
+
+# if st.sidebar.button("➕ Add Expense"):
+#     st.session_state.page = "Add Expense"
+
+# if st.sidebar.button("📋 View Expense"):
+#     st.session_state.page = "View Expense"
+
+# if st.sidebar.button("💰 Total Expense"):
+#     st.session_state.page = "Total Expense"
+
+# if st.sidebar.button("✏ Edit Expense"):
+#     st.session_state.page = "Edit Expense"
+
+# if st.sidebar.button("🗑 Delete Expense"):
+#     st.session_state.page = "Delete Expense"
+
+# if st.sidebar.button("📊 Expense Chart"):
+#     st.session_state.page = "Expense Chart"
+
+# if st.sidebar.button("📊 Monthly Analytics"):
+#     st.session_state.page = "Monthly Analytics"
+
+# if "page" not in st.session_state:
+#     st.session_state.page = "Add Expense"    
+
+# st.sidebar.markdown("---")
+
+# st.sidebar.markdown(
+# """
+# <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
+# <a href="https://www.linkedin.com/in/parth-adsul-889106384/" target="_blank">
+# <i class="fab fa-linkedin" style="font-size:34px; color:#0A66C2;"></i>
+# </a>
+
+# <a href="https://github.com/parth484" target="_blank">
+# <i class="fab fa-github" style="font-size:34px; color:black;"></i>
+# </a>
+# </div>
+
+# <p style="text-align:center; font-size:12px; margin-top:8px;">
+# Made by Parth Adsul
+# </p>
+# """,
+# unsafe_allow_html=True
+# )
+
+
+# #--------------------------validations------------------
+# def exp_validation(payment_id):
+#      return  payment_id.startswith("EX") and  payment_id[2:].isdigit() and len(payment_id) == 5
+
+# def load_expense():
+#     expenses = []
+#     if not os.path.exists(TRACKED):
+#         open(TRACKED, "w").close()
+#     with open(TRACKED) as f:
+#         for line in f:
+#             d = line.strip().split("|")
+#             if len(d) == 5:
+#                 expenses.append({
+#                     "payment_id":d[0],
+#                     "date": d[1],
+#                     "category": d[2],
+#                     "amount": d[3],
+#                     "description": d[4],
+                     
+#                 })
+#     return expenses
+
+# def save_expenses(expenses):
+#     with open(TRACKED, "w") as f:
+#         for s in expenses:
+#             line = "|".join(str(value) for value in s.values())
+#             f.write(line + "\n")
+
+# def ValidateAmount(amount):
+#    return amount>0
+
+# expenses=load_expense()
+
+
+# #-----------------pages logic-----------------------
+# if st.session_state.page == "Add Expense":
+#     st.subheader("➕ Add Expense")
+
+#     with st.form("add_student", clear_on_submit=True):
+#         payment_id = st.text_input("expense ID (EX001,EX002,...)")
+#         date = datetime.date.today().strftime("%d-%m-%Y") 
+#         category = st.text_input("Enter category(Food,cloth,books,etc..)")
+#         amount=st.number_input("enter amount")
+#         description = st.text_input("additional description")
+#         submit = st.form_submit_button("Add Expense")
+
+#     if submit:
+#          if not exp_validation(payment_id):
+#             st.error("Invalid payment ID")
+#          elif any(s["payment_id"] == payment_id for s in expenses):
+#             st.warning("expense id already exists")  
+#          elif not ValidateAmount(amount):
+#              st.error("amount should be greater than 0.Rs") 
+#          else:
+
+#             expenses.append({
+#                     "payment_id":payment_id,
+#                     "date": date,
+#                     "category": category,
+#                     "amount": amount,
+#                     "description": description,
+                    
+                
+#             })
+
+#             save_expenses(expenses)
+#             st.success("saved!!!")      
+
+# if st.session_state.page == "View Expense":
+#     st.subheader("📋 All Expenses")
+
+#     if len(expenses) == 0:
+#         st.info("No expenses found")
+#     else:
+#          st.dataframe(expenses, use_container_width=True)
+
+# if st.session_state.page == "Total Expense":
+#     st.subheader("💰 Total Spending")
+
+#     total = sum(float(i["amount"]) for i in expenses)
+
+#     st.metric("Total Spent", f"₹ {total}")
+
+# if st.session_state.page == "Edit Expense":
+#     st.subheader("✏ Edit Expense")
+
+#     payment_ids = [i["payment_id"] for i in expenses]
+
+#     selected_id = st.selectbox("Select Expense ID", payment_ids)
+
+#     new_amount = st.number_input("Enter new amount", min_value=1)
+
+#     if st.button("Update Expense"):
+#         for i in expenses:
+#             if i["payment_id"] == selected_id:
+#                 i["amount"] = new_amount
+#                 save_expenses(expenses)
+#                 st.success("Expense updated successfully!")
+#                 break
+
+# if st.session_state.page == "Delete Expense":
+#     st.subheader("🗑 Delete Expense")
+
+#     payment_ids = [i["payment_id"] for i in expenses]
+
+#     selected_id = st.selectbox("Select Expense ID to delete", payment_ids)
+
+#     if st.button("Delete Expense"):
+#         for i in expenses:
+#             if i["payment_id"] == selected_id:
+#                 expenses.remove(i)
+#                 save_expenses(expenses)
+#                 st.success("Expense deleted successfully!")
+#                 break     
+
+# if st.session_state.page == "Expense Chart":
+#     st.subheader("📊 Expense Category Chart")
+
+#     category_data = {}
+
+#     for i in expenses:
+#         cat = i["category"]
+#         amt = float(i["amount"])
+
+#         if cat in category_data:
+#             category_data[cat] += amt
+#         else:
+#             category_data[cat] = amt
+
+#     st.bar_chart(category_data)            
+
+# #---------------Monthly spendings__________________
+# if st.session_state.page == "Monthly Analytics":
+#     st.subheader("📅 Monthly Expense Analytics")
+
+#     monthly_data = {}
+
+#     for i in expenses:
+#         date_str = i["date"]
+#         amount = float(i["amount"])
+
+#         date_obj = datetime.datetime.strptime(date_str, "%d-%m-%Y")
+#         month_key = date_obj.strftime("%B %Y")   # Example: March 2026
+
+#         if month_key in monthly_data:
+#             monthly_data[month_key] += amount
+#         else:
+#             monthly_data[month_key] = amount
+
+#     if len(monthly_data) == 0:
+#         st.info("No expenses available")
+#     else:
+#         st.bar_chart(monthly_data)
+
+#         highest_month = max(monthly_data, key=monthly_data.get)
+
+#         st.metric(
+#             "Highest Spending Month",
+#             highest_month,
+#             f"₹ {monthly_data[highest_month]}"
+#         )
 import streamlit as st
-import os
+import sqlite3
 import datetime
 
-TRACKED = os.path.join(os.path.dirname(__file__), "tracked.txt")
+# ------------------ DATABASE SETUP ------------------
+conn = sqlite3.connect("expenses.db", check_same_thread=False)
+cursor = conn.cursor()
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS expenses (
+    payment_id TEXT PRIMARY KEY,
+    date TEXT,
+    category TEXT,
+    amount REAL,
+    description TEXT
+)
+""")
+conn.commit()
+
+# ------------------ FUNCTIONS ------------------
+def exp_validation(payment_id):
+    return payment_id.startswith("EX") and payment_id[2:].isdigit() and len(payment_id) == 5
+
+def load_expense():
+    cursor.execute("SELECT * FROM expenses")
+    rows = cursor.fetchall()
+
+    expenses = []
+    for r in rows:
+        expenses.append({
+            "payment_id": r[0],
+            "date": r[1],
+            "category": r[2],
+            "amount": r[3],
+            "description": r[4]
+        })
+    return expenses
+
+def add_expense_db(data):
+    try:
+        cursor.execute("""
+        INSERT INTO expenses VALUES (?, ?, ?, ?, ?)
+        """, (
+            data["payment_id"],
+            data["date"],
+            data["category"],
+            data["amount"],
+            data["description"]
+        ))
+        conn.commit()
+        return True
+    except:
+        return False
+
+def update_expense_db(payment_id, new_amount):
+    cursor.execute(
+        "UPDATE expenses SET amount=? WHERE payment_id=?",
+        (new_amount, payment_id)
+    )
+    conn.commit()
+
+def delete_expense_db(payment_id):
+    cursor.execute(
+        "DELETE FROM expenses WHERE payment_id=?",
+        (payment_id,)
+    )
+    conn.commit()
+
+def ValidateAmount(amount):
+    return amount > 0
+
+
+# ------------------ UI SETUP ------------------
 st.set_page_config("Expense tracker", layout="wide")
-st.title("💸 Expense Tacker System")
+st.title("💸 Expense Tracker System")
 
 st.markdown(
 """
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-""",
+# <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+# """,
 unsafe_allow_html=True
 )
-#----------------Buttons on sidebar------------------------
+# ------------------ SIDEBAR ------------------
 st.sidebar.title("Navigation")
 
 if st.sidebar.button("➕ Add Expense"):
@@ -38,12 +330,12 @@ if st.sidebar.button("📊 Monthly Analytics"):
     st.session_state.page = "Monthly Analytics"
 
 if "page" not in st.session_state:
-    st.session_state.page = "Add Expense"    
+    st.session_state.page = "Add Expense"
 
 st.sidebar.markdown("---")
 
 st.sidebar.markdown(
-"""
+ """
 <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
 <a href="https://www.linkedin.com/in/parth-adsul-889106384/" target="_blank">
 <i class="fab fa-linkedin" style="font-size:34px; color:#0A66C2;"></i>
@@ -59,167 +351,117 @@ Made by Parth Adsul
 </p>
 """,
 unsafe_allow_html=True
-)
+)    
 
+# ------------------ LOAD DATA ------------------
+expenses = load_expense()
 
-#--------------------------validations------------------
-def exp_validation(payment_id):
-     return  payment_id.startswith("EX") and  payment_id[2:].isdigit() and len(payment_id) == 5
-
-def load_expense():
-    expenses = []
-    if not os.path.exists(TRACKED):
-        open(TRACKED, "w").close()
-    with open(TRACKED) as f:
-        for line in f:
-            d = line.strip().split("|")
-            if len(d) == 5:
-                expenses.append({
-                    "payment_id":d[0],
-                    "date": d[1],
-                    "category": d[2],
-                    "amount": d[3],
-                    "description": d[4],
-                     
-                })
-    return expenses
-
-def save_expenses(expenses):
-    with open(TRACKED, "w") as f:
-        for s in expenses:
-            line = "|".join(str(value) for value in s.values())
-            f.write(line + "\n")
-
-def ValidateAmount(amount):
-   return amount>0
-
-expenses=load_expense()
-
-
-#-----------------pages logic-----------------------
+# ------------------ ADD EXPENSE ------------------
 if st.session_state.page == "Add Expense":
     st.subheader("➕ Add Expense")
 
-    with st.form("add_student", clear_on_submit=True):
-        payment_id = st.text_input("expense ID (EX001,EX002,...)")
-        date = datetime.date.today().strftime("%d-%m-%Y") 
-        category = st.text_input("Enter category(Food,cloth,books,etc..)")
-        amount=st.number_input("enter amount")
-        description = st.text_input("additional description")
+    with st.form("add_expense", clear_on_submit=True):
+        payment_id = st.text_input("Expense ID (EX001...)")
+        date = datetime.date.today().strftime("%d-%m-%Y")
+        category = st.text_input("Category")
+        amount = st.number_input("Amount", min_value=0.0)
+        description = st.text_input("Description")
         submit = st.form_submit_button("Add Expense")
 
     if submit:
-         if not exp_validation(payment_id):
+        if not exp_validation(payment_id):
             st.error("Invalid payment ID")
-         elif any(s["payment_id"] == payment_id for s in expenses):
-            st.warning("expense id already exists")  
-         elif not ValidateAmount(amount):
-             st.error("amount should be greater than 0.Rs") 
-         else:
-
-            expenses.append({
-                    "payment_id":payment_id,
-                    "date": date,
-                    "category": category,
-                    "amount": amount,
-                    "description": description,
-                    
-                
+        elif not ValidateAmount(amount):
+            st.error("Amount must be greater than 0")
+        else:
+            success = add_expense_db({
+                "payment_id": payment_id,
+                "date": date,
+                "category": category,
+                "amount": amount,
+                "description": description
             })
 
-            save_expenses(expenses)
-            st.success("saved!!!")      
+            if success:
+                st.success("Expense saved ✅")
+            else:
+                st.warning("Expense ID already exists!")
 
-if st.session_state.page == "View Expense":
+# ------------------ VIEW EXPENSE ------------------
+elif st.session_state.page == "View Expense":
     st.subheader("📋 All Expenses")
 
     if len(expenses) == 0:
         st.info("No expenses found")
     else:
-         st.dataframe(expenses, use_container_width=True)
+        st.dataframe(expenses, use_container_width=True)
 
-if st.session_state.page == "Total Expense":
+# ------------------ TOTAL EXPENSE ------------------
+elif st.session_state.page == "Total Expense":
     st.subheader("💰 Total Spending")
 
     total = sum(float(i["amount"]) for i in expenses)
-
     st.metric("Total Spent", f"₹ {total}")
 
-if st.session_state.page == "Edit Expense":
+# ------------------ EDIT EXPENSE ------------------
+elif st.session_state.page == "Edit Expense":
     st.subheader("✏ Edit Expense")
 
-    payment_ids = [i["payment_id"] for i in expenses]
+    if len(expenses) == 0:
+        st.info("No data to edit")
+    else:
+        payment_ids = [i["payment_id"] for i in expenses]
+        selected_id = st.selectbox("Select Expense ID", payment_ids)
+        new_amount = st.number_input("New Amount", min_value=1.0)
 
-    selected_id = st.selectbox("Select Expense ID", payment_ids)
+        if st.button("Update"):
+            update_expense_db(selected_id, new_amount)
+            st.success("Updated successfully ✅")
 
-    new_amount = st.number_input("Enter new amount", min_value=1)
-
-    if st.button("Update Expense"):
-        for i in expenses:
-            if i["payment_id"] == selected_id:
-                i["amount"] = new_amount
-                save_expenses(expenses)
-                st.success("Expense updated successfully!")
-                break
-
-if st.session_state.page == "Delete Expense":
+# ------------------ DELETE EXPENSE ------------------
+elif st.session_state.page == "Delete Expense":
     st.subheader("🗑 Delete Expense")
 
-    payment_ids = [i["payment_id"] for i in expenses]
+    if len(expenses) == 0:
+        st.info("No data to delete")
+    else:
+        payment_ids = [i["payment_id"] for i in expenses]
+        selected_id = st.selectbox("Select ID to delete", payment_ids)
 
-    selected_id = st.selectbox("Select Expense ID to delete", payment_ids)
+        if st.button("Delete"):
+            delete_expense_db(selected_id)
+            st.success("Deleted successfully ✅")
 
-    if st.button("Delete Expense"):
-        for i in expenses:
-            if i["payment_id"] == selected_id:
-                expenses.remove(i)
-                save_expenses(expenses)
-                st.success("Expense deleted successfully!")
-                break     
-
-if st.session_state.page == "Expense Chart":
-    st.subheader("📊 Expense Category Chart")
+# ------------------ CATEGORY CHART ------------------
+elif st.session_state.page == "Expense Chart":
+    st.subheader("📊 Category Chart")
 
     category_data = {}
-
     for i in expenses:
         cat = i["category"]
         amt = float(i["amount"])
+        category_data[cat] = category_data.get(cat, 0) + amt
 
-        if cat in category_data:
-            category_data[cat] += amt
-        else:
-            category_data[cat] = amt
+    if category_data:
+        st.bar_chart(category_data)
+    else:
+        st.info("No data")
 
-    st.bar_chart(category_data)            
-
-#---------------Monthly spendings__________________
-if st.session_state.page == "Monthly Analytics":
-    st.subheader("📅 Monthly Expense Analytics")
+# ------------------ MONTHLY ANALYTICS ------------------
+elif st.session_state.page == "Monthly Analytics":
+    st.subheader("📅 Monthly Analytics")
 
     monthly_data = {}
 
     for i in expenses:
-        date_str = i["date"]
-        amount = float(i["amount"])
+        date_obj = datetime.datetime.strptime(i["date"], "%d-%m-%Y")
+        month = date_obj.strftime("%B %Y")
+        monthly_data[month] = monthly_data.get(month, 0) + float(i["amount"])
 
-        date_obj = datetime.datetime.strptime(date_str, "%d-%m-%Y")
-        month_key = date_obj.strftime("%B %Y")   # Example: March 2026
-
-        if month_key in monthly_data:
-            monthly_data[month_key] += amount
-        else:
-            monthly_data[month_key] = amount
-
-    if len(monthly_data) == 0:
-        st.info("No expenses available")
-    else:
+    if monthly_data:
         st.bar_chart(monthly_data)
 
-        highest_month = max(monthly_data, key=monthly_data.get)
-
-        st.metric(
-            "Highest Spending Month",
-            highest_month,
-            f"₹ {monthly_data[highest_month]}"
-        )
+        highest = max(monthly_data, key=monthly_data.get)
+        st.metric("Highest Spending Month", highest, f"₹ {monthly_data[highest]}")
+    else:
+        st.info("No data")
